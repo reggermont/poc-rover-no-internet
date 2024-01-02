@@ -1,0 +1,79 @@
+services:
+  module-one:
+    image: node:20.10
+    environment:
+      ENV: $${ENV:local}
+      SHELL: /bin/bash
+    command: ["/bin/bash", "-c", "yarn install && yarn build && yarn start"]
+    healthcheck:
+      test: curl -sSf http://localhost:4001/health || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - ./:/app
+    container_name: module-one
+    working_dir: /app/packages/module-one
+    ports:
+      - 4001:4001
+
+  module-two:
+    image: node:20.10
+    environment:
+      ENV: $${ENV:local}
+      SHELL: /bin/bash
+    command: ["/bin/bash", "-c", "yarn install && yarn build && yarn start"]
+    healthcheck:
+      test: curl -sSf http://localhost:4002/health || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - ./:/app
+    container_name: module-two
+    working_dir: /app/packages/module-two
+    ports:
+      - 4002:4002
+
+  router:
+    image: router:${ROUTER_VERSION:-1.35.0}
+    build:
+      dockerfile: packages/router/Dockerfile
+      args:
+        ROUTER_VERSION: ${ROUTER_VERSION:-1.35.0}
+        ROVER_VERSION: ${ROUTER_VERSION:-0.22.0}
+    depends_on:
+      module-one:
+        condition: service_healthy
+      module-two:
+        condition: service_healthy
+    container_name: router
+    working_dir: /app/packages/router
+    volumes:
+      - ./packages/router:/app/packages/router
+      - router-rover-bin:/root/.rover/bin
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "rover supergraph compose --config supergraph.yaml --elv2-license=accept > supergraph.graphql && router --config router.yaml --supergraph supergraph.graphql",
+      ]
+    environment:
+      - APOLLO_GRAPH_REF=${APOLLO_GRAPH_REF}
+      - APOLLO_KEY=${APOLLO_KEY}
+      - CO_PROCESSOR_URL=http://co-processor:4501/
+      - MODULE_ONE_SUBGRAPH_URL=http://module-one:4001/graphql
+      - MODULE_TWO_SUBGRAPH_URL=http://module-two:4002/graphql
+    healthcheck:
+      test: curl -sSf http://localhost:4500/health || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    ports:
+      - 4500:4500
+
+volumes:
+  router-rover-bin:

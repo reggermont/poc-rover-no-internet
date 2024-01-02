@@ -1,0 +1,11 @@
+federation_version: 2
+
+subgraphs:
+  module-one:
+    schema:
+      routing_url: '${env.MODULE_ONE_SUBGRAPH_URL:-http://localhost:4001/graphql}'
+      subgraph_url: '${env.MODULE_ONE_SUBGRAPH_URL:-http://localhost:4001/graphql}'
+  module-two:
+    schema:
+      routing_url: '${env.MODULE_TWO_SUBGRAPH_URL:-http://localhost:4002/graphql}'
+      subgraph_url: '${env.MODULE_TWO_SUBGRAPH_URL:-http://localhost:4002/graphql}'

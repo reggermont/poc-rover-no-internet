@@ -1,0 +1,11 @@
+type Query {
+  """
+  Module two - query one
+  """
+  moduleTwoQueryOne(parameterOne: String!): String
+
+  """
+  Module two - query two
+  """
+  moduleTwoQueryTwo(parameterOne: String!): String
+}

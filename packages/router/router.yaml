@@ -1,0 +1,22 @@
+sandbox:
+  enabled: true
+
+homepage:
+  enabled: false
+
+supergraph:
+  listen: 0.0.0.0:4500
+  path: /graphql
+  introspection: true
+
+health_check:
+  listen: 0.0.0.0:4500
+  enabled: true
+
+include_subgraph_errors:
+  all: true
+
+cors:
+  origins:
+    - https://studio.apollographql.com
+  allow_credentials: true
